@@ -12,15 +12,24 @@ h2 {
 
 }
 
-#map_canvas { h
-	eight: 100%
+#map_canvas {
+	width: 90%;
+	height: 100%;
+	z-index: 0;
 }
 
 #user_controls {
-	padding: 5px 15px 20px 15px;
-	background: #fff;
-	border-radius: 15px;
-	position: absolute;
-	right: 50px;
-	bottom: 50px;
+	z-index: 999;
+	position:absolute;
+	height: 100%;
+	right: 0;
+	top: 0;
+	width: 250px;
+	padding: 0 10px;
+	background: #eee;
+}
+
+#user_controls  p {
+	width: 300px;
+	word-wrap: normal;
 }

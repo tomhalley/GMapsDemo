@@ -6,33 +6,55 @@
 	<link href="css/main.css" rel="stylesheet" type="text/css" />
 	<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
 	<script type="text/javascript" src="https://maps.google.co.uk/maps/api/js?key=AIzaSyCaqTVfuYMofUZUESElspizPt2XIxoESk4&sensor=true"></script>
+	<script type="text/javascript" src="https://maps.googleapis.co.uk/maps/api/js?libraries=places&sensor=true"></script>
 	<script type="text/javascript">
 		var map;
+		var defaultZoom = 8;
+		var time = 0.5;
+		var distanceCircle = null;
 
 		$(document).ready(function() {
-			if(navigator.geolocation) {
-				navigator.geolocation.getCurrentPosition(function(position) {
-					initialize(position.coords.latitude, position.coords.longitude);
-					map.setZoom(19);
-				});
-			} else {
-				initialize(51.30011329389015, -0.33036231994628906);
-			}
+			buildMap(54.826008, -4.086914);
 
 			$("form#details").submit( function(evt) {	
 				evt.preventDefault();
 				var $inputs = $('form#details :input');
+				console.log($inputs);
 
 				var values = {}
 				$inputs.each(function() {
 					values[this.name] = $(this).val();
 				})
+				
+				transport = $('input[name=transport]:checked', 'form#details').val()
+				console.log(transport);
+				var distance = 0;
+				var zoom = 0;
+				switch(transport)
+				{
+					case "foot":
+						distance = 3;
+						zoom = 14;
+						break;
+					case "bicycle":
+						distance = 10;
+						zoom = 12;
+						break;
+					case "car":
+						distance = 30;
+						zoom = 10;
+						break;
+				}
 
-				getLocation(values.Location);
+				getLocation(values.location, function(lat, lng) {
+					map.panTo(new google.maps.LatLng(lat, lng));
+					map.setZoom(zoom);
+					showDistance(lat, lng, distance);
+				});
 			});
-		})
+		});
 
-		function getLocation(location) {
+		function getLocation(location, callback) {
 			$.ajax({
 				url: "https://maps.googleapis.com/maps/api/geocode/json",
 				dataType: "json",
@@ -43,34 +65,49 @@
 				},
 				crossDomain: true,
 				success: function(data) {
-					lat = data.results[0].geometry.location.lat;
-					lng = data.results[0].geometry.location.lng;
-					map.setZoom(19);
-					map.panTo(new google.maps.LatLng(lat, lng));
-					
+					callback(data.results[0].geometry.location.lat, data.results[0].geometry.location.lng);
 				}
 			})
 		}
+		
+		function showDistance(lat, lng, radius) {
+			if (distanceCircle != null) {
+				distanceCircle.setMap(null);
+			}
+		
+			distanceCircle = new google.maps.Circle({
+				strokeColor: "#FF0000",
+				strokeColor: "#FF0000",
+				strokeOpacity: 0.8,
+				strokeWeight: 2,
+				fillColor: "#FF0000",
+				fillOpacity: 0.075,
+				map: map,
+				center: new google.maps.LatLng(lat, lng),
+				radius: 1609 * (radius * time)
+			});
+		}
 
-		function initialize() {
+		function buildMap(lat, lng) {
 			var mapOptions = {
-				center: new google.maps.LatLng(51.30011329389015, -0.33036231994628906),
+				center: new google.maps.LatLng(lat, lng),
+				overviewMapControl: false,
+				mapTypeControl: false,
 				zoom: 6,
-				mapTypeId: google.maps.MapTypeId.SATELLITE
+				mapTypeId: google.maps.MapTypeId.HYBRID
 			};
-			map = new google.maps.Map(document.getElementById("map_canvas"),
-				mapOptions);
+			map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
 		}
 	</script>
 </head>
 
 <body>
-	<div id="map_canvas" style="width: 100%; height: 100%"></div>
+	
 	<div id="user_controls">
-		<h2>Test</h2>
+		<h2>Zombie Survival Map</h2>
 		<form id="details">
 			<label for="location">You are:</label>
-			<input type="text" name="Location" id="location" />
+			<input type="text" name="location" id="location" />
 			<br><br>
 			<label>Transport</label>
 			<input type="radio" name="transport" value="foot" />Foot
@@ -80,5 +117,6 @@
 			<input type="submit" value="Find" />
 		</form>
 	</div>
+	<div id="map_canvas"></div>
 </body>
 </html>
