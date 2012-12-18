@@ -1,0 +1,26 @@
+html { 
+	height: 100%;
+}
+
+body { 
+	height: 100%; 
+	margin: 0; 
+	padding: 0 
+}
+
+h2 {
+
+}
+
+#map_canvas { h
+	eight: 100%
+}
+
+#user_controls {
+	padding: 5px 15px 25px 15px;
+	background: #fff;
+	border-radius: 15px;
+	position: absolute;
+	right: 50px;
+	bottom: 50px;
+}
