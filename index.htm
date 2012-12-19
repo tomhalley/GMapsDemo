@@ -7,7 +7,7 @@
 	<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
 	<script type="text/javascript" src="js/knockout-2.2.0.js"></script>
 	<script type="text/javascript" src="js/viewmodel.js"></script>
-	<script type="text/javascript" src="https:///maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyCaqTVfuYMofUZUESElspizPt2XIxoESk4&sensor=true"></script>
+	<script type="text/javascript" src="https:///maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyCaqTVfuYMofUZUESElspizPt2XIxoESk4&sensor=false"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
 			ko.applyBindings(ViewModel());
@@ -18,7 +18,7 @@
 <body>
 	
 	<div id="user_controls">
-		<h2>Zombie Survival Map</h2>
+		<h2>Test</h2>
 		<form id="details" data-bind="submit: detailsSubmit" >
 			<label for="location">You are:</label>
 			<input type="text" name="location" id="location" value="London" data-bind="value: locationSearch" />

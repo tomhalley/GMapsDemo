@@ -2,11 +2,12 @@ var ViewModel = function() {
 	var self = this;
 	
 	// Search Arrays
-	this.transport = ko.observableArray(["airport", "bicycle_store", "car_dealer", "car_rental", "gas_station"]);
+	this.transport = ko.observableArray(["airport", "bicycle_store", "car_dealer", "car_rental"]);
 	this.food = ko.observableArray(["convenience_store", "grocery_or_supermarket", "shopping_mall", "food"]);
 	this.medical = ko.observableArray(["hospital", "health", "pharmacy"]);
-	this.arms = ko.observableArray(["police"]);
+	this.arms = ko.observableArray(["police", "home_goods_store"]);
 	this.shelter = ko.observableArray(["church", "shopping_mall", "stadium", "movie_theater", "bar"]);
+	this.fuel = ko.observableArray(["gas_station"]);
 	
 	// Map Variables
 	this.map = null;
@@ -15,7 +16,7 @@ var ViewModel = function() {
 	this.radius = 0;
 	
 	// User Input
-	this.locationSearch = ko.observable("London");
+	this.locationSearch = ko.observable("KT22 9DT");
 	this.transportSearch = ko.observable("foot");
 	
 	this.detailsSubmit = function() {
@@ -47,8 +48,14 @@ var ViewModel = function() {
 				radius: 1609 * (self.radius * self.time)
 			}
 			service = new google.maps.places.PlacesService(map);
-			service.nearbySearch(placesRequest, function(data) {
-				console.log(data[0]);
+			service.radarSearch(placesRequest, function(data) {
+				for(var i = 0; i <  data.length; i++) {
+					var marker = new google.maps.Marker({
+						position: new google.maps.LatLng(data[i].geometry.location.Ya, data[i].geometry.location.Za),
+						map: self.map,
+						title: data[i].name
+					});
+				}
 			});
 		});
 	}
