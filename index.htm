@@ -5,99 +5,13 @@
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<link href="css/main.css" rel="stylesheet" type="text/css" />
 	<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
-	<script type="text/javascript" src="https://maps.google.co.uk/maps/api/js?key=AIzaSyCaqTVfuYMofUZUESElspizPt2XIxoESk4&sensor=true"></script>
-	<script type="text/javascript" src="https://maps.googleapis.co.uk/maps/api/js?libraries=places&sensor=true"></script>
+	<script type="text/javascript" src="js/knockout-2.2.0.js"></script>
+	<script type="text/javascript" src="js/viewmodel.js"></script>
+	<script type="text/javascript" src="https:///maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyCaqTVfuYMofUZUESElspizPt2XIxoESk4&sensor=true"></script>
 	<script type="text/javascript">
-		var map;
-		var defaultZoom = 8;
-		var time = 0.5;
-		var distanceCircle = null;
-
 		$(document).ready(function() {
-			buildMap(54.826008, -4.086914);
-
-			$("form#details").submit( function(evt) {	
-				evt.preventDefault();
-				var $inputs = $('form#details :input');
-				console.log($inputs);
-
-				var values = {}
-				$inputs.each(function() {
-					values[this.name] = $(this).val();
-				})
-				
-				transport = $('input[name=transport]:checked', 'form#details').val()
-				console.log(transport);
-				var distance = 0;
-				var zoom = 0;
-				switch(transport)
-				{
-					case "foot":
-						distance = 3;
-						zoom = 14;
-						break;
-					case "bicycle":
-						distance = 10;
-						zoom = 12;
-						break;
-					case "car":
-						distance = 30;
-						zoom = 10;
-						break;
-				}
-
-				getLocation(values.location, function(lat, lng) {
-					map.panTo(new google.maps.LatLng(lat, lng));
-					map.setZoom(zoom);
-					showDistance(lat, lng, distance);
-				});
-			});
+			ko.applyBindings(ViewModel());
 		});
-
-		function getLocation(location, callback) {
-			$.ajax({
-				url: "https://maps.googleapis.com/maps/api/geocode/json",
-				dataType: "json",
-				type: "GET",
-				data: { 
-					"address": location,
-					"sensor": true
-				},
-				crossDomain: true,
-				success: function(data) {
-					callback(data.results[0].geometry.location.lat, data.results[0].geometry.location.lng);
-				}
-			})
-		}
-		
-		function showDistance(lat, lng, radius) {
-			if (distanceCircle != null) {
-				distanceCircle.setMap(null);
-			}
-		
-			distanceCircle = new google.maps.Circle({
-				strokeColor: "#FF0000",
-				strokeColor: "#FF0000",
-				strokeOpacity: 0.8,
-				strokeWeight: 2,
-				fillColor: "#FF0000",
-				fillOpacity: 0.075,
-				map: map,
-				center: new google.maps.LatLng(lat, lng),
-				radius: 1609 * (radius * time)
-			});
-		}
-
-		function buildMap(lat, lng) {
-			var mapOptions = {
-				center: new google.maps.LatLng(lat, lng),
-				overviewMapControl: false,
-				mapTypeControl: false,
-				zoom: 6,
-				mapTypeId: google.maps.MapTypeId.HYBRID
-			};
-			map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-		}
 	</script>
 </head>
 
@@ -105,14 +19,14 @@
 	
 	<div id="user_controls">
 		<h2>Zombie Survival Map</h2>
-		<form id="details">
+		<form id="details" data-bind="submit: detailsSubmit" >
 			<label for="location">You are:</label>
-			<input type="text" name="location" id="location" />
+			<input type="text" name="location" id="location" value="London" data-bind="value: locationSearch" />
 			<br><br>
 			<label>Transport</label>
-			<input type="radio" name="transport" value="foot" />Foot
-			<input type="radio" name="transport" value="bicycle" />Bicycle
-			<input type="radio" name="transport" value="car" />Car
+			<input type="radio" name="transport" value="foot" data-bind="checked: transportSearch"/>Foot
+			<input type="radio" name="transport" value="bicycle" data-bind="checked: transportSearch"/>Bicycle
+			<input type="radio" name="transport" value="car" data-bind="checked: transportSearch"/>Car
 			<br><br>
 			<input type="submit" value="Find" />
 		</form>
