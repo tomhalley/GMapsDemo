@@ -6,12 +6,12 @@ var ViewModel = function() {
 	var self = this;
 	
 	// Search Arrays
-	this.transport = ko.observableArray(["airport", "bicycle_store", "car_dealer", "car_rental"]);
-	this.food = ko.observableArray(["convenience_store", "grocery_or_supermarket", "shopping_mall", "food"]);
-	this.medical = ko.observableArray(["hospital", "health", "pharmacy"]);
-	this.arms = ko.observableArray(["police", "home_goods_store"]);
-	this.shelter = ko.observableArray(["church", "shopping_mall", "stadium", "movie_theater", "bar"]);
-	this.fuel = ko.observableArray(["gas_station"]);
+	this.transport = ["airport", "bicycle_store", "car_dealer", "car_rental"];
+	this.food = ["convenience_store", "grocery_or_supermarket", "shopping_mall", "food"];
+	this.medical = ["hospital", "health", "pharmacy"];
+	this.arms = ["police", "home_goods_store"];
+	this.shelter = ["church", "shopping_mall", "stadium", "movie_theater", "bar"];
+	this.fuel = ["gas_station"];
 	
 	// Map Variables
 	this.map = null;
@@ -51,18 +51,20 @@ var ViewModel = function() {
 			self.loc = new google.maps.LatLng(lat, lng);
 			self.map.setZoom(self.zoom);
 			self.map.panTo(self.loc);
-			self.showDistance();
+			self.drawDistanceCircle();
 	
 			var placesRequest = {
-				types: self.transport(),
+				types: self.transport,
 				location: self.loc,
 				radius: 1609 * (self.radius * self.time)
 			};
+
 			service = new google.maps.places.PlacesService(map);
 			service.radarSearch(placesRequest, function(data) {
 				for(var i = 0; i < data.length; i++) {
 					var markerLocation =
 						new google.maps.LatLng(data[i].geometry.location.Ya, data[i].geometry.location.Za);
+
 					var distanceFromLocation = google.maps.geometry.spherical.computeDistanceBetween(
 						self.loc,
 						markerLocation
@@ -74,6 +76,7 @@ var ViewModel = function() {
 							map: self.map,
 							title: data[i].name
 						});
+
 						self.markers.push(marker);
 					}
 				}
@@ -97,7 +100,7 @@ var ViewModel = function() {
 		});
 	};
 		
-	this.showDistance = function() {
+	this.drawDistanceCircle = function() {
 		if (self.distanceCircle !== null) {
 			self.distanceCircle.setMap(null);
 		}
