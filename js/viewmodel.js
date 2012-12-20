@@ -1,3 +1,4 @@
+// TODO: Use Radar search and asynchronously load markers with data
 // TODO: Add slider for changing the amount of time. When slider changes, automatically update circle radius.
 // TODO: Add button for user to manually update the places in the circle.
 // TODO: Add menu for showing list of all available places by category.
@@ -14,12 +15,14 @@ var ViewModel = function() {
 	this.fuel = ["gas_station"];
 	
 	// Map Variables
-	this.map = null;
-	this.loc = new google.maps.LatLng(54.826008, -4.086914);
-	this.time = 0.5;
 	this.distanceCircle = null;
-	this.radius = 0;
+	this.infoWindow = null;
+	this.loc = new google.maps.LatLng(54.826008, -4.086914);
+	this.map = null;
 	this.markers = [];
+	this.radius = 0;
+	this.service = null;
+	this.time = 0.5;
 	this.zoom = 0;
 	
 	// User Input
@@ -61,7 +64,19 @@ var ViewModel = function() {
 
 			service = new google.maps.places.PlacesService(map);
 			service.radarSearch(placesRequest, function(data) {
-				for(var i = 0; i < data.length; i++) {
+
+				if (self.service === null) {
+					self.service = new google.maps.places.PlacesService(self.map);
+				}
+
+				console.log(data.length);
+
+				var i = 0;
+				$.doTimeout(250, function() {
+					if(self.markers.length == data.length) {
+						return false;
+					}
+
 					var markerLocation =
 						new google.maps.LatLng(data[i].geometry.location.Ya, data[i].geometry.location.Za);
 
@@ -71,16 +86,40 @@ var ViewModel = function() {
 					);
 
 					if(distanceFromLocation <= 1609 * (self.radius * self.time)) {
-						var marker = new google.maps.Marker({
-							position: markerLocation,
-							map: self.map,
-							title: data[i].name
-						});
-
-						self.markers.push(marker);
+						self.getPlaceData(data[i], markerLocation, function() { i++; });
 					}
-				}
+
+					return true;
+				});
 			});
+		});
+	};
+
+	this.getPlaceData = function(placeObjIn, markerLocation, callback) {
+		self.service.getDetails({ reference: placeObjIn.reference }, function(place, service) {
+			if(service == "OK") {
+				var marker = new google.maps.Marker({
+					position: markerLocation,
+					map: self.map,
+					title: place.name
+				});
+
+				self.addInfoWindowToMarker(marker);
+
+				self.markers.push(marker);
+			}
+
+			callback();
+		});
+	};
+
+	this.addInfoWindowToMarker = function(marker) {
+		google.maps.event.addListener(marker, "click", function() {
+			if(self.infoWindow !== null) {
+				self.infoWindow.close();
+			}
+			self.infoWindow = new google.maps.InfoWindow({content: marker.title});
+			self.infoWindow.open(self.map, marker);
 		});
 	};
 	
