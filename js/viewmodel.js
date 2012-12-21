@@ -28,7 +28,9 @@ var ViewModel = function() {
 	// User Input
 	this.locationSearch = ko.observable("KT22 9DT");
 	this.transportSearch = ko.observable("foot");
-	this.places = [];
+	this.loading = ko.observable("");
+	this.places = null;
+
 	this.detailsSubmit = function() {
 		switch(self.transportSearch())
 		{
@@ -65,14 +67,15 @@ var ViewModel = function() {
 			service = new google.maps.places.PlacesService(map);
 			service.radarSearch(placesRequest, function(data) {
 				if (self.service === null) {
-					console.log("all " + self.places.length + " places placed on map");
 					self.service = new google.maps.places.PlacesService(self.map);
 				}
 
 				self.places = data;
+				self.loading("Loading...");
 
 				for(var i in data) {
-					if(self.markers.length === data.length) {
+					if(self.markers.length >= data.length) {
+						self.loading(null);
 						return false;
 					}
 
