@@ -28,7 +28,7 @@ var ViewModel = function() {
 	// User Input
 	this.locationSearch = ko.observable("KT22 9DT");
 	this.transportSearch = ko.observable("foot");
-	
+	this.places = [];
 	this.detailsSubmit = function() {
 		switch(self.transportSearch())
 		{
@@ -64,52 +64,48 @@ var ViewModel = function() {
 
 			service = new google.maps.places.PlacesService(map);
 			service.radarSearch(placesRequest, function(data) {
-
 				if (self.service === null) {
+					console.log("all " + self.places.length + " places placed on map");
 					self.service = new google.maps.places.PlacesService(self.map);
 				}
 
-				console.log(data.length);
+				self.places = data;
 
-				var i = 0;
-				$.doTimeout(250, function() {
-					if(self.markers.length == data.length) {
+				for(var i in data) {
+					if(self.markers.length === data.length) {
 						return false;
 					}
 
-					var markerLocation =
-						new google.maps.LatLng(data[i].geometry.location.Ya, data[i].geometry.location.Za);
-
 					var distanceFromLocation = google.maps.geometry.spherical.computeDistanceBetween(
 						self.loc,
-						markerLocation
+						data[i].geometry.location
 					);
 
 					if(distanceFromLocation <= 1609 * (self.radius * self.time)) {
-						self.getPlaceData(data[i], markerLocation, function() { i++; });
+						setTimeout("self.getPlaceData(" + i + ")", i * 250);
 					}
-
-					return true;
-				});
+				}
 			});
 		});
 	};
 
-	this.getPlaceData = function(placeObjIn, markerLocation, callback) {
+	this.getPlaceData = function(i) {
+		var placeObjIn = self.places[i];
+
 		self.service.getDetails({ reference: placeObjIn.reference }, function(place, service) {
 			if(service == "OK") {
 				var marker = new google.maps.Marker({
-					position: markerLocation,
+					position: placeObjIn.geometry.location,
 					map: self.map,
 					title: place.name
 				});
 
 				self.addInfoWindowToMarker(marker);
-
 				self.markers.push(marker);
+			} else {
+				console.log("Query limit reached");
+				setTimeout("self.getPlaceData(" + i + ")", 250);
 			}
-
-			callback();
 		});
 	};
 
